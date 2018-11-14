@@ -29,5 +29,5 @@ htdocs/includes/composer/
 
 # custom
 build/docker/.env
-htdocs/install.lock
+install.lock
 sftp-config.json
