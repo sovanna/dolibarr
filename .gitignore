@@ -26,3 +26,8 @@ htdocs/includes/autoload.php
 htdocs/includes/bin/
 htdocs/includes/composer/
 /.pydevproject
+
+# custom
+build/docker/.env
+htdocs/install.lock
+sftp-config.json

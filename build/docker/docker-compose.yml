@@ -1,25 +1,44 @@
-mariadb:
+version: "3.0"
+
+services:
+  mariadb:
     image: mariadb:latest
     environment:
-        MYSQL_ROOT_PASSWORD: root
-        MYSQL_DATABASE: dolibarr
+      - MYSQL_ROOT_PASSWORD=${DOLIBARR_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=dolibarr
+    restart: always
+    command: [
+      "--character_set_client=utf8",
+      "--character-set-server=utf8mb4",
+      "--collation-server=utf8mb4_unicode_ci",
+      "--character-set-client-handshake=FALSE"
+    ]
+    volumes:
+      - dolibarr_db:/var/lib/mysql
 
-phpmyadmin:
+  phpmyadmin:
     image: phpmyadmin/phpmyadmin
     environment:
-        PMA_HOST: mariadb
+      - PMA_HOST=mariadb
     links:
-        - mariadb
+      - mariadb
+    depends_on:
+      - mariadb
     ports:
-        - "8080:80"
+      - "8302:80"
 
-web:
+  web:
     build: .
     environment:
-        HOST_USER_ID: $HOST_USER_ID
+      - HOST_USER_ID=${HOST_USER_ID}
     volumes:
-        - ../../htdocs:/var/www/html
+      - ../../htdocs:/var/www/html
     links:
-        - mariadb
+      - mariadb
+    depends_on:
+      - mariadb
     ports:
-        - "80:80"
+      - "8301:80"
+
+volumes:
+  dolibarr_db:
