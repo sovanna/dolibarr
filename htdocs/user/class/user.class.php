@@ -422,45 +422,9 @@ class User extends CommonObject
 				return -2;
 			}
 
-			// Load user->default_values for user. TODO Save this in memcached ?
-			$sql = "SELECT rowid, entity, type, page, param, value";
-			$sql.= " FROM ".MAIN_DB_PREFIX."default_values";
-			$sql.= " WHERE entity IN (".$this->entity.",".$conf->entity.")";
-			$sql.= " AND user_id IN (0, ".$this->id.")";
-			$resql = $this->db->query($sql);
-			if ($resql)
-			{
-				while ($obj = $this->db->fetch_object($resql))
-				{
-					if (! empty($obj->page) && ! empty($obj->type) && ! empty($obj->param))
-					{
-						// $obj->page is relative URL with or without params
-						// $obj->type can be 'filters', 'sortorder', 'createform', ...
-						// $obj->param is key or param
-						$pagewithoutquerystring=$obj->page;
-						$pagequeries='';
-						if (preg_match('/^([^\?]+)\?(.*)$/', $pagewithoutquerystring, $reg))	// There is query param
-						{
-							$pagewithoutquerystring=$reg[1];
-							$pagequeries=$reg[2];
-						}
-						$this->default_values[$pagewithoutquerystring][$obj->type][$pagequeries?$pagequeries:'_noquery_'][$obj->param]=$obj->value;
-						//if ($pagequeries) $this->default_values[$pagewithoutquerystring][$obj->type.'_queries']=$pagequeries;
-					}
-				}
-				// Sort by key, so _noquery_ is last
-				if(!empty($this->default_values)) {
-					foreach($this->default_values as $a => $b)
-					{
-						foreach($b as $c => $d)
-						{
-							krsort($this->default_values[$a][$c]);
-						}
-					}
-				}
-				$this->db->free($resql);
-			}
-			else
+			$result = $this->loadDefaultValues();
+
+			if ($result < 0)
 			{
 				$this->error=$this->db->lasterror();
 				return -3;
@@ -468,6 +432,62 @@ class User extends CommonObject
 		}
 
 		return 1;
+	}
+
+	/**
+	 *  Load default value in property ->default_values
+	 *
+	 *  @return int						> 0 if OK, < 0 if KO
+	 */
+	function loadDefaultValues()
+	{
+		global $conf;
+
+		// Load user->default_values for user. TODO Save this in memcached ?
+		$sql = "SELECT rowid, entity, type, page, param, value";
+		$sql.= " FROM ".MAIN_DB_PREFIX."default_values";
+		$sql.= " WHERE entity IN (".($this->entity > 0 ? $this->entity.", " : "").$conf->entity.")";	// Entity of user (if defined) + current entity
+		$sql.= " AND user_id IN (0".($this->id > 0 ? ", ".$this->id : "").")";							// User 0 (all) + me (if defined)
+		$resql = $this->db->query($sql);
+		if ($resql)
+		{
+			while ($obj = $this->db->fetch_object($resql))
+			{
+				if (! empty($obj->page) && ! empty($obj->type) && ! empty($obj->param))
+				{
+					// $obj->page is relative URL with or without params
+					// $obj->type can be 'filters', 'sortorder', 'createform', ...
+					// $obj->param is key or param
+					$pagewithoutquerystring=$obj->page;
+					$pagequeries='';
+					if (preg_match('/^([^\?]+)\?(.*)$/', $pagewithoutquerystring, $reg))	// There is query param
+					{
+						$pagewithoutquerystring=$reg[1];
+						$pagequeries=$reg[2];
+					}
+					$this->default_values[$pagewithoutquerystring][$obj->type][$pagequeries?$pagequeries:'_noquery_'][$obj->param]=$obj->value;
+					//if ($pagequeries) $this->default_values[$pagewithoutquerystring][$obj->type.'_queries']=$pagequeries;
+				}
+			}
+			// Sort by key, so _noquery_ is last
+			if(!empty($this->default_values)) {
+				foreach($this->default_values as $a => $b)
+				{
+					foreach($b as $c => $d)
+					{
+						krsort($this->default_values[$a][$c]);
+					}
+				}
+			}
+			$this->db->free($resql);
+
+			return 1;
+		}
+		else
+		{
+			dol_print_error($this->db);
+			return -1;
+		}
 	}
 
 	/**
@@ -764,7 +784,7 @@ class User extends CommonObject
 		// Recuperation des droits utilisateurs + recuperation des droits groupes
 
 		// D'abord les droits utilisateurs
-		$sql = "SELECT r.module, r.perms, r.subperms";
+		$sql = "SELECT DISTINCT r.module, r.perms, r.subperms";
 		$sql.= " FROM ".MAIN_DB_PREFIX."user_rights as ur";
 		$sql.= ", ".MAIN_DB_PREFIX."rights_def as r";
 		$sql.= " WHERE r.id = ur.fk_id";
@@ -818,7 +838,7 @@ class User extends CommonObject
 		}
 
 		// Maintenant les droits groupes
-		$sql = "SELECT r.module, r.perms, r.subperms";
+		$sql = "SELECT DISTINCT r.module, r.perms, r.subperms";
 		$sql.= " FROM ".MAIN_DB_PREFIX."usergroup_rights as gr,";
 		$sql.= " ".MAIN_DB_PREFIX."usergroup_user as gu,";
 		$sql.= " ".MAIN_DB_PREFIX."rights_def as r";
@@ -2283,7 +2303,7 @@ class User extends CommonObject
 			$label.= '<br><b>'.$langs->trans("Browser").':</b> '.$conf->browser->name.($conf->browser->version?' '.$conf->browser->version:'').' ('.$_SERVER['HTTP_USER_AGENT'].')';
 			$label.= '<br><b>'.$langs->trans("Layout").':</b> '.$conf->browser->layout;
 			$label.= '<br><b>'.$langs->trans("Screen").':</b> '.$_SESSION['dol_screenwidth'].' x '.$_SESSION['dol_screenheight'];
-			if ($conf->browser->layout == 'phone') $label.= '<br><b>'.$langs->trans("Phone").':</b> '.$langs->trans("Yes");;
+			if ($conf->browser->layout == 'phone') $label.= '<br><b>'.$langs->trans("Phone").':</b> '.$langs->trans("Yes");
 			if (! empty($_SESSION["disablemodules"])) $label.= '<br><b>'.$langs->trans("DisabledModules").':</b> <br>'.join(', ',explode(',',$_SESSION["disablemodules"]));
 		}
 		if ($infologin < 0) $label='';
@@ -3179,14 +3199,15 @@ class User extends CommonObject
 	/**
 	 *	Load all objects into $this->users
 	 *
-	 *  @param	string		$sortorder    sort order
-	 *  @param	string		$sortfield    sort field
-	 *  @param	int			$limit		  limit page
-	 *  @param	int			$offset    	  page
-	 *  @param	array		$filter    	  filter output
-	 *  @return int          	<0 if KO, >0 if OK
+	 *  @param	string		$sortorder		sort order
+	 *  @param	string		$sortfield		sort field
+	 *  @param	int			$limit			limit page
+	 *  @param	int			$offset			page
+	 *  @param	array		$filter			Filter array. Example array('field'=>'valueforlike', 'customurl'=>...)
+	 *  @param  string      $filtermode		Filter mode (AND or OR)
+	 *  @return int							<0 if KO, >0 if OK
 	 */
-	function fetchAll($sortorder='', $sortfield='', $limit=0, $offset=0, $filter=array())
+	function fetchAll($sortorder='', $sortfield='', $limit=0, $offset=0, $filter=array(), $filtermode='AND')
 	{
 		global $conf;
 
@@ -3194,18 +3215,26 @@ class User extends CommonObject
 		$sql.= ' FROM '.MAIN_DB_PREFIX .$this->table_element.' as t ';
 		$sql.= " WHERE 1";
 
-		//Manage filter
+		// Manage filter
+		$sqlwhere = array();
 		if (!empty($filter)){
 			foreach($filter as $key => $value) {
-				if (strpos($key,'date')) {
-					$sql.= ' AND '.$key.' = \''.$this->db->idate($value).'\'';
+				if ($key=='t.rowid') {
+					$sqlwhere[] = $key . '='. $value;
+				}
+				elseif (strpos($key,'date') !== false) {
+					$sqlwhere[] = $key.' = \''.$this->db->idate($value).'\'';
 				}
 				elseif ($key=='customsql') {
-					$sql.= ' AND '.$value;
-				} else {
-					$sql.= ' AND '.$key.' LIKE \'%'.$value.'%\'';
+					$sqlwhere[] = $value;
+				}
+				else {
+					$sqlwhere[] = $key . ' LIKE \'%' . $this->db->escape($value) . '%\'';
 				}
 			}
+		}
+		if (count($sqlwhere) > 0) {
+			$sql .= ' AND (' . implode(' '.$filtermode.' ', $sqlwhere).')';
 		}
 		$sql.= $this->db->order($sortfield,$sortorder);
 		if ($limit) $sql.= $this->db->plimit($limit+1,$offset);

@@ -165,7 +165,7 @@ class Paiement extends CommonObject
 		$sql.= ' b.fk_account';
 		$sql.= ' FROM '.MAIN_DB_PREFIX.'paiement as p LEFT JOIN '.MAIN_DB_PREFIX.'c_paiement as c ON p.fk_paiement = c.id';
 		$sql.= ' LEFT JOIN '.MAIN_DB_PREFIX.'bank as b ON p.fk_bank = b.rowid';
-		$sql.= ' WHERE p.entity IN (' . getEntity('facture').')';
+		$sql.= ' WHERE p.entity IN (' . getEntity('invoice').')';
 		if ($id > 0)
 			$sql.= ' AND p.rowid = '.$id;
 		else if ($ref)
@@ -862,9 +862,10 @@ class Paiement extends CommonObject
 	/**
 	 *    Validate payment
 	 *
-	 *    @return     int     <0 if KO, >0 if OK
+	 *	  @param	User	$user		User making validation
+	 *    @return   int     			<0 if KO, >0 if OK
 	 */
-	function valide()
+	function valide(User $user=null)
 	{
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element.' SET statut = 1 WHERE rowid = '.$this->id;
 
@@ -885,9 +886,10 @@ class Paiement extends CommonObject
 	/**
 	 *    Reject payment
 	 *
-	 *    @return     int     <0 if KO, >0 if OK
+	 *	  @param	User	$user		User making reject
+	 *    @return   int     			<0 if KO, >0 if OK
 	 */
-	function reject()
+	function reject(User $user=null)
 	{
 		$sql = 'UPDATE '.MAIN_DB_PREFIX.$this->table_element.' SET statut = 2 WHERE rowid = '.$this->id;
 

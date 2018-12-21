@@ -48,7 +48,7 @@ $colorbacklineimpair1='255,255,255';    // line impair
 $colorbacklineimpair2='255,255,255';    // line impair
 $colorbacklinepair1='248,248,248';    // line pair
 $colorbacklinepair2='246,246,246';    // line pair
-$colorbacklinepairhover='244,244,244';    // line pair
+$colorbacklinepairhover='230,237,244';    // line pair
 $colorbacklinebreak='214,218,220';
 $colorbackbody='248,248,248';
 $colortexttitlenotab='90,90,90';
@@ -60,19 +60,24 @@ $fontsizesmaller='11';
 
 if (defined('THEME_ONLY_CONSTANT')) return;
 
-session_cache_limiter(false);
+session_cache_limiter('public');
 
 require_once '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
 // Load user to have $user->conf loaded (not done into main because of NOLOGIN constant defined)
-if (empty($user->id) && ! empty($_SESSION['dol_login'])) $user->fetch('',$_SESSION['dol_login'],'',1);
+// and permission, so we can later calculate number of top menu ($nbtopmenuentries) according to user profile.
+if (empty($user->id) && ! empty($_SESSION['dol_login']))
+{
+	$user->fetch('',$_SESSION['dol_login'],'',1);
+	$user->getrights();
+}
 
 
 // Define css type
 top_httphead('text/css');
 // Important: Following code is to avoid page request by browser and PHP CPU at each Dolibarr page access.
-if (empty($dolibarr_nocache)) header('Cache-Control: max-age=3600, public, must-revalidate');
+if (empty($dolibarr_nocache)) header('Cache-Control: max-age=10800, public, must-revalidate');
 else header('Cache-Control: no-cache');
 
 if (GETPOST('theme','alpha')) $conf->theme=GETPOST('theme','alpha');  // If theme was forced on URL
@@ -1828,6 +1833,14 @@ foreach($mainmenuusedarray as $val)
 		print "}\n";
 	}
 }
+$j=0;
+while ($j++ < 4)
+{
+	$url=dol_buildpath($path.'/theme/'.$theme.'/img/menus/generic'.$j."_over.png",1);
+	print "div.mainmenu.generic".$j." {\n";
+	print "	background-image: url(".$url.");\n";
+	print "}\n";
+}
 // End of part to add more div class css
 ?>
 
@@ -1982,7 +1995,7 @@ div.login_block {
 	vertical-align: middle;
 	background: rgb(<?php echo $colorbackvmenu1; ?>);
 	width: 228px;
-	height: 43px;
+	height: 45px;
 	<?php if (GETPOST('optioncss','aZ09') == 'print') { ?>
 	display: none;
 	<?php } ?>
@@ -3323,7 +3336,7 @@ span.dashboardlineko {
     /* border-bottom-width: 0 !important; */
 }
 .boxtable .fichehalfright, .boxtable .fichehalfleft {
-    min-width: 300px;
+    min-width: 275px;
 }
 .tdboxstats {
 	text-align: center;
@@ -4705,7 +4718,7 @@ a span.select2-chosen
 
 /* Special case for the select2 add widget */
 #addbox .select2-container .select2-choice > .select2-chosen, #actionbookmark .select2-container .select2-choice > .select2-chosen {
-    text-align: <?php echo $left; ?>;;
+    text-align: <?php echo $left; ?>;
     opacity: 0.3;
 }
 .select2-container--default .select2-selection--single .select2-selection__placeholder {
