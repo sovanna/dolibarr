@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y libpng-dev libjpeg-dev libldap2-dev \
         && docker-php-ext-install ldap \
         && docker-php-ext-install mysqli \
         && apt-get purge -y libpng-dev libjpeg-dev libldap2-dev
-        && apt-get purge -y libjpeg-dev libldap2-dev
 
 COPY docker-run.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-run.sh
