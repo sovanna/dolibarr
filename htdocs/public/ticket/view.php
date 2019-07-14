@@ -39,6 +39,9 @@ require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/ticket/class/actions_ticket.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/class/html.formticket.class.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/ticket.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/security.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/company.lib.php';
+require_once DOL_DOCUMENT_ROOT.'/core/lib/payments.lib.php';
 
 // Load translation files required by the page
 $langs->loadLangs(array("companies","other","ticket"));
@@ -118,7 +121,8 @@ if ($action == "view_ticket" || $action == "add_message" || $action == "close" |
         $action = '';
     }
 }
-$object->doActions($action);
+
+//$object->doActions($action);
 
 
 
@@ -129,18 +133,18 @@ $object->doActions($action);
 $form = new Form($db);
 $formticket = new FormTicket($db);
 
+if (!$conf->global->TICKET_ENABLE_PUBLIC_INTERFACE) {
+	print '<div class="error">' . $langs->trans('TicketPublicInterfaceForbidden') . '</div>';
+	$db->close();
+	exit();
+}
+
 $arrayofjs = array();
 $arrayofcss = array('/ticket/css/styles.css.php');
 
 llxHeaderTicket($langs->trans("Tickets"), "", 0, 0, $arrayofjs, $arrayofcss);
 
-if (!$conf->global->TICKET_ENABLE_PUBLIC_INTERFACE) {
-    print '<div class="error">' . $langs->trans('TicketPublicInterfaceForbidden') . '</div>';
-    $db->close();
-    exit();
-}
-
-print '<div style="margin: 0 auto; width:60%">';
+print '<div style="margin: 0 auto; width:60%" class="ticketpublicarea">';
 
 if ($action == "view_ticket" || $action == "add_message" || $action == "close" || $action == "confirm_public_close") {
     if ($display_ticket) {
@@ -261,7 +265,7 @@ if ($action == "view_ticket" || $action == "add_message" || $action == "close" |
             print '<input type="hidden" name="action" value="view_ticketlist">';
             print '<input type="hidden" name="track_id" value="'.$object->dao->track_id.'">';
             print '<input type="hidden" name="email" value="'.$_SESSION['email_customer'].'">';
-            print '<input type="hidden" name="search_fk_status" value="non_closed">';
+            //print '<input type="hidden" name="search_fk_status" value="non_closed">';
             print "</form>\n";
 
             print '<div class="tabsAction">';
@@ -294,7 +298,7 @@ if ($action == "view_ticket" || $action == "add_message" || $action == "close" |
         print '<div class="error">Not Allowed<br><a href="' . $_SERVER['PHP_SELF'] . '?track_id=' . $object->dao->track_id . '">' . $langs->trans('Back') . '</a></div>';
     }
 } else {
-    print '<p style="text-align: center">' . $langs->trans("TicketPublicMsgViewLogIn") . '</p>';
+    print '<p class="center">' . $langs->trans("TicketPublicMsgViewLogIn") . '</p>';
 
     print '<div id="form_view_ticket">';
     print '<form method="post" name="form_view_ticket"  enctype="multipart/form-data" action="' . $_SERVER['PHP_SELF'] . '">';
@@ -317,6 +321,11 @@ if ($action == "view_ticket" || $action == "add_message" || $action == "close" |
     print "</div>\n";
 }
 
+print "</div>";
+
 // End of page
-llxFooter();
+htmlPrintOnlinePaymentFooter($mysoc, $langs, 1, $suffix, $object);
+
+llxFooter('', 'public');
+
 $db->close();

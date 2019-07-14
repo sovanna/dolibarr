@@ -1,5 +1,5 @@
 <?php
-/* Copyright (C) 2007-2010 Laurent Destailleur  <eldy@users.sourceforge.net>
+/* Copyright (C) 2007-2019 Laurent Destailleur  <eldy@users.sourceforge.net>
  * Copyright (C) 2005-2009 Regis Houssin        <regis.houssin@inodbox.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,13 +20,7 @@
  *      \file       htdocs/core/class/events.class.php
  *      \ingroup    core
  *		\brief      File of class to manage security events.
- *		\author		Laurent Destailleur
  */
-
-// Put here all includes required by your class file
-//require_once DOL_DOCUMENT_ROOT.'/core/class/commonobject.class.php';
-//require_once DOL_DOCUMENT_ROOT.'/societe/class/societe.class.php';
-//require_once DOL_DOCUMENT_ROOT.'/product/class/product.class.php';
 
 
 /**
@@ -119,7 +113,7 @@ class Events // extends CommonObject
 	 *
 	 *  @param		DoliDB		$db      Database handler
 	 */
-	function __construct($db)
+	public function __construct($db)
 	{
 		$this->db = $db;
 	}
@@ -129,11 +123,11 @@ class Events // extends CommonObject
 	 *   Create in database
 	 *
 	 *   @param      User	$user       User that create
-	 *   @return     int     		    <0 if KO, >0 if OK
+	 *   @return     int                <0 if KO, >0 if OK
 	 */
-	function create($user)
+	public function create($user)
 	{
-		global $conf, $langs;
+		global $conf;
 
 		// Clean parameters
 		$this->description=trim($this->description);
@@ -155,10 +149,10 @@ class Events // extends CommonObject
 		$sql.= " '".$this->db->escape($this->type)."',";
 		$sql.= " ".$conf->entity.",";
 		$sql.= " '".$this->db->escape(getUserRemoteIP())."',";
-		$sql.= " ".($this->user_agent ? "'".$this->db->escape(dol_trunc($this->user_agent,250))."'" : 'NULL').",";
+		$sql.= " ".($this->user_agent ? "'".$this->db->escape(dol_trunc($this->user_agent, 250))."'" : 'NULL').",";
 		$sql.= " '".$this->db->idate($this->dateevent)."',";
 		$sql.= " ".($user->id?"'".$this->db->escape($user->id)."'":'NULL').",";
-		$sql.= " '".$this->db->escape(dol_trunc($this->description,250))."'";
+		$sql.= " '".$this->db->escape(dol_trunc($this->description, 250))."'";
 		$sql.= ")";
 
 		dol_syslog(get_class($this)."::create", LOG_DEBUG);
@@ -183,10 +177,8 @@ class Events // extends CommonObject
 	 * @param   int		$notrigger	    0=no, 1=yes (no update trigger)
 	 * @return  int         			<0 if KO, >0 if OK
 	 */
-	function update($user=null, $notrigger=0)
+    public function update($user = null, $notrigger = 0)
 	{
-		global $conf, $langs;
-
 		// Clean parameters
 		$this->id=trim($this->id);
 		$this->type=trim($this->type);
@@ -220,10 +212,8 @@ class Events // extends CommonObject
 	 *  @param  User	$user       User that load
 	 *  @return int         		<0 if KO, >0 if OK
 	 */
-	function fetch($id, $user=null)
+    public function fetch($id, $user = null)
 	{
-		global $langs;
-
 		$sql = "SELECT";
 		$sql.= " t.rowid,";
 		$sql.= " t.tms,";
@@ -271,10 +261,8 @@ class Events // extends CommonObject
 	 *	@param	User	$user       User that delete
 	 *	@return	int					<0 if KO, >0 if OK
 	 */
-	function delete($user)
+    public function delete($user)
 	{
-		global $conf, $langs;
-
 		$sql = "DELETE FROM ".MAIN_DB_PREFIX."events";
 		$sql.= " WHERE rowid=".$this->id;
 
@@ -296,8 +284,8 @@ class Events // extends CommonObject
      *	id must be 0 if object instance is a specimen.
      *
      *  @return	void
-	 */
-	function initAsSpecimen()
+     */
+    public function initAsSpecimen()
 	{
 		$this->id=0;
 
@@ -305,5 +293,5 @@ class Events // extends CommonObject
 		$this->type='';
 		$this->dateevent=time();
 		$this->description='This is a specimen event';
-	}
+    }
 }

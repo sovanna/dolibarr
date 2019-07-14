@@ -37,7 +37,7 @@ class modCategorie extends DolibarrModules
 	 *
 	 *   @param      DoliDB		$db      Database handler
 	 */
-	function __construct($db)
+	public function __construct($db)
 	{
 	    global $conf;
 
@@ -47,7 +47,7 @@ class modCategorie extends DolibarrModules
 		$this->family = "technic";
 		$this->module_position = '20';
 		// Module label (no space allowed), used if translation string 'ModuleXXXName' not found (where XXX is value of numeric property 'numero' of module)
-		$this->name = preg_replace('/^mod/i','',get_class($this));
+		$this->name = preg_replace('/^mod/i', '', get_class($this));
 		$this->description = "Gestion des categories (produits, clients, fournisseurs...)";
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
@@ -230,7 +230,7 @@ class modCategorie extends DolibarrModules
 		$this->export_code[$r]='category_'.$r;
 		$this->export_label[$r]='CatProdList';
 		$this->export_icon[$r]='category';
-        $this->export_enabled[$r]='$conf->produit->enabled';
+        $this->export_enabled[$r]='$conf->product->enabled || $conf->service->enabled';
 		$this->export_permission[$r]=array(array("categorie","lire"),array("produit","lire"));
 		$this->export_fields_array[$r]=array('u.rowid'=>"CategId",'u.label'=>"Label",'u.description'=>"Description",'p.rowid'=>'ProductId','p.ref'=>'Ref');
 		$this->export_TypeFields_array[$r]=array('u.label'=>"Text",'u.description'=>"Text",'p.ref'=>'Text');
@@ -483,13 +483,13 @@ class modCategorie extends DolibarrModules
      *      @param      string	$options    Options when enabling module ('', 'noboxes')
 	 *      @return     int             	1 if OK, 0 if KO
      */
-	function init($options='')
+	public function init($options = '')
 	{
 		// Permissions
 		$this->remove($options);
 
 		$sql = array();
 
-		return $this->_init($sql,$options);
+		return $this->_init($sql, $options);
 	}
 }
