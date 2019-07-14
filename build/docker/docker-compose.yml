@@ -20,6 +20,10 @@ services:
     image: phpmyadmin/phpmyadmin
     environment:
       - PMA_HOST=mariadb
+      - VIRTUAL_HOST=${DOLIBARR_PHPMYADMIN_VIRTUAL_HOST}
+      - VIRTUAL_PORT=80
+      - LETSENCRYPT_HOST=${DOLIBARR_PHPMYADMIN_VIRTUAL_HOST}
+      - LETSENCRYPT_EMAIL=${DOLIBARR_LETSENCRYPT_EMAIL}
     restart: unless-stopped
     links:
       - mariadb
@@ -33,7 +37,7 @@ services:
       - VIRTUAL_HOST=${DOLIBARR_WEB_VIRTUAL_HOST}
       - VIRTUAL_PORT=80
       - LETSENCRYPT_HOST=${DOLIBARR_WEB_LETSENCRYPT_HOST}
-      - LETSENCRYPT_EMAIL=sovanna.hing@gmail.com
+      - LETSENCRYPT_EMAIL=${DOLIBARR_LETSENCRYPT_EMAIL}
     restart: unless-stopped
     volumes:
       - ../../htdocs:/var/www/html
