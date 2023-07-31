@@ -1,7 +1,8 @@
 <?php
 /* Module to manage locations, buildings, floors and rooms into Dolibarr ERP/CRM
- * Copyright (C) 2013	Jean-François Ferry	<jfefe@aternatik.fr>
- * Copyright (C) 2016	Gilles Poirier		<glgpoirier@gmail.com>
+ * Copyright (C) 2013       Jean-François Ferry     <jfefe@aternatik.fr>
+ * Copyright (C) 2016       Gilles Poirier          <gilles.poirier@netlogic.fr>
+ * Copyright (C) 2023       Frédéric France         <frederic.france@netlogic.fr>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,7 +15,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
@@ -26,7 +27,7 @@
 /**
  * Prepare head for tabs
  *
- * @param	Object	$object		Object
+ * @param	Dolresource	$object		Object
  * @return	array				Array of head entries
  */
 function resource_prepare_head($object)
@@ -37,15 +38,16 @@ function resource_prepare_head($object)
 
 	$head[$h][0] = dol_buildpath('/resource/card.php', 1).'?id='.$object->id;
 	$head[$h][1] = $langs->trans("ResourceCard");
-    	$head[$h][2] = 'resource';
+	$head[$h][2] = 'resource';
 	$h++;
 
-	if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && (empty($conf->global->RESOURCE_HIDE_ADD_CONTACT_USER) || empty($conf->global->RESOURCE_HIDE_ADD_CONTACT_THIPARTY)))
-	{
-	    $nbContact = count($object->liste_contact(-1, 'internal')) + count($object->liste_contact(-1, 'external'));
-	    $head[$h][0] = DOL_URL_ROOT.'/resource/contact.php?id='.$object->id;
+	if (empty($conf->global->MAIN_DISABLE_CONTACTS_TAB) && (empty($conf->global->RESOURCE_HIDE_ADD_CONTACT_USER) || empty($conf->global->RESOURCE_HIDE_ADD_CONTACT_THIPARTY))) {
+		$nbContact = count($object->liste_contact(-1, 'internal')) + count($object->liste_contact(-1, 'external'));
+		$head[$h][0] = DOL_URL_ROOT.'/resource/contact.php?id='.$object->id;
 		$head[$h][1] = $langs->trans('ContactsAddresses');
-		if ($nbContact > 0) $head[$h][1].= ' <span class="badge">'.$nbContact.'</span>';
+		if ($nbContact > 0) {
+			$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbContact.'</span>';
+		}
 		$head[$h][2] = 'contact';
 		$h++;
 	}
@@ -54,35 +56,41 @@ function resource_prepare_head($object)
 	// Entries must be declared in modules descriptor with line
 	// $this->tabs = array('entity:+tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to add new tab
 	// $this->tabs = array('entity:-tabname:Title:@mymodule:/mymodule/mypage.php?id=__ID__');   to remove a tab
-	complete_head_from_modules($conf, $langs, $object, $head, $h, 'resource');
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'resource', 'add', 'core');
 
-	if (empty($conf->global->MAIN_DISABLE_NOTES_TAB))
-	{
+	if (empty($conf->global->MAIN_DISABLE_NOTES_TAB)) {
 		$nbNote = 0;
-		if(!empty($object->note_private)) $nbNote++;
-		if(!empty($object->note_public)) $nbNote++;
+		if (!empty($object->note_private)) {
+			$nbNote++;
+		}
+		if (!empty($object->note_public)) {
+			$nbNote++;
+		}
 		$head[$h][0] = DOL_URL_ROOT.'/resource/note.php?id='.$object->id;
 		$head[$h][1] = $langs->trans('Notes');
-		if ($nbNote > 0) $head[$h][1].= ' <span class="badge">'.$nbNote.'</span>';
+		if ($nbNote > 0) {
+			$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbNote.'</span>';
+		}
 		$head[$h][2] = 'note';
 		$h++;
 	}
 
 	require_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
-	$upload_dir = $conf->resource->dir_output . "/" . dol_sanitizeFileName($object->ref);
+	$upload_dir = $conf->resource->dir_output."/".dol_sanitizeFileName($object->ref);
 	$nbFiles = count(dol_dir_list($upload_dir, 'files', 0, '', '(\.meta|_preview.*\.png)$'));
 	$head[$h][0] = DOL_URL_ROOT.'/resource/document.php?id='.$object->id;
 	$head[$h][1] = $langs->trans("Documents");
-	if($nbFiles > 0) $head[$h][1].= ' <span class="badge">'.$nbFiles.'</span>';
+	if ($nbFiles > 0) {
+		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbFiles.'</span>';
+	}
 	$head[$h][2] = 'documents';
 	$h++;
 
 	$head[$h][0] = DOL_URL_ROOT.'/resource/agenda.php?id='.$object->id;
 	$head[$h][1] = $langs->trans("Events");
-	if (! empty($conf->agenda->enabled) && (!empty($user->rights->agenda->myactions->read) || !empty($user->rights->agenda->allactions->read) ))
-	{
-		$head[$h][1].= '/';
-		$head[$h][1].= $langs->trans("Agenda");
+	if (isModEnabled('agenda') && ($user->hasRight('agenda', 'myactions', 'read') || $user->hasRight('agenda', 'allactions', 'read'))) {
+		$head[$h][1] .= '/';
+		$head[$h][1] .= $langs->trans("Agenda");
 	}
 	$head[$h][2] = 'agenda';
 	$h++;
@@ -91,6 +99,8 @@ function resource_prepare_head($object)
 	$head[$h][1] = $langs->trans('Info');
 	$head[$h][2] = 'info';
 	$h++;*/
+
+	complete_head_from_modules($conf, $langs, $object, $head, $h, 'resource', 'add', 'external');
 
 	complete_head_from_modules($conf, $langs, $object, $head, $h, 'resource', 'remove');
 
@@ -105,7 +115,10 @@ function resource_prepare_head($object)
 function resource_admin_prepare_head()
 {
 
-	global $langs, $conf, $user;
+	global $conf, $db, $langs, $user;
+
+	$extrafields = new ExtraFields($db);
+	$extrafields->fetch_name_optionals_label('resource');
 
 	$h = 0;
 	$head = array();
@@ -123,6 +136,10 @@ function resource_admin_prepare_head()
 
 	$head[$h][0] = DOL_URL_ROOT.'/admin/resource_extrafields.php';
 	$head[$h][1] = $langs->trans("ExtraFields");
+	$nbExtrafields = $extrafields->attributes['resource']['count'];
+	if ($nbExtrafields > 0) {
+		$head[$h][1] .= '<span class="badge marginleftonlyshort">'.$nbExtrafields.'</span>';
+	}
 	$head[$h][2] = 'attributes';
 	$h++;
 

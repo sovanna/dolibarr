@@ -1,47 +1,56 @@
-version: "3.0"
-
-services:
-  mariadb:
-    image: mariadb:10.5
-    environment:
-      - MYSQL_ROOT_PASSWORD=${DOLIBARR_MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=dolibarr
-    restart: unless-stopped
-    command: [
-      "--character_set_client=utf8",
-      "--character-set-server=utf8mb4",
-      "--collation-server=utf8mb4_unicode_ci",
-      "--character-set-client-handshake=FALSE"
-    ]
-    volumes:
-      - ./var/lib/mysql:/var/lib/mysql
-
-  phpmyadmin:
-    image: phpmyadmin
-    environment:
-      - PMA_HOST=mariadb
-      - VIRTUAL_HOST=${DOLIBARR_PHPMYADMIN_VIRTUAL_HOST}
-      - VIRTUAL_PORT=80
-    restart: unless-stopped
-    links:
-      - mariadb
-    depends_on:
-      - mariadb
-
-  web:
-    build: .
-    environment:
-      - HOST_USER_ID=${HOST_USER_ID}
-      - VIRTUAL_HOST=${DOLIBARR_WEB_VIRTUAL_HOST}
-      - VIRTUAL_PORT=80
-    restart: unless-stopped
-    volumes:
-      - ../../htdocs:/var/www/html
-    links:
-      - mariadb
-    depends_on:
-      - mariadb
+version: '3'
 
 networks:
-  default:
-      name: nginx-proxy
+    default:
+        name: nginx-proxy
+
+services:
+    mariadb:
+        image: mariadb:latest
+        environment:
+            MYSQL_ROOT_PASSWORD: ${DOLIBARR_MYSQL_ROOT_PASSWORD}
+            MYSQL_DATABASE: dolibarr
+        ports:
+            - "3306:3306"
+        command: [
+            "--character_set_client=utf8",
+            "--character-set-server=utf8mb4",
+            "--collation-server=utf8mb4_unicode_ci",
+            "--character-set-client-handshake=FALSE"
+        ]
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        environment:
+            PMA_HOST: mariadb
+        depends_on:
+            - mariadb
+        ports:
+            - "8080:80"
+
+    web:
+        build: .
+        environment:
+            HOST_USER_ID: $HOST_USER_ID
+            PHP_INI_DATE_TIMEZONE: $PHP_INI_DATE_TIMEZONE
+            PHP_INI_MEMORY_LIMIT: $PHP_INI_MEMORY_LIMIT
+            VIRTUAL_HOST: ${DOLIBARR_WEB_VIRTUAL_HOST}
+            VIRTUAL_PORT: 80
+        volumes:
+            - ../../htdocs:/var/www/html/
+            - ../../documents:/var/documents
+        ports:
+            - "80:80"
+            - "9000:9000"
+        depends_on:
+            - mariadb
+            - mail
+        extra_hosts:
+            - "localhost.localdomain:127.0.0.1"
+            - "host.docker.internal:host-gateway"
+
+    mail:
+        image: maildev/maildev
+        ports:
+            - "8081:80"
+            - "25:25"

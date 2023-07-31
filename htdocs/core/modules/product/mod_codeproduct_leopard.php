@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -33,39 +33,41 @@ require_once DOL_DOCUMENT_ROOT.'/core/modules/product/modules_product.class.php'
 class mod_codeproduct_leopard extends ModeleProductCode
 {
 	/*
-	 * Attention ce module est utilise par defaut si aucun module n'a
-	 * ete definit dans la configuration
+	 * Please note this module is used by default if no module has been defined in the configuration
 	 *
-	 * Le fonctionnement de celui-ci doit donc rester le plus ouvert possible
+	 * Its operation must therefore remain as open as possible
 	 */
 
 	/**
 	 * @var string Nom du modele
 	 * @deprecated
-	 * @see name
+	 * @see $name
 	 */
-	public $nom='Leopard';
+	public $nom = 'Leopard';
 
 	/**
 	 * @var string model name
 	 */
-	public $name='Leopard';
+	public $name = 'Leopard';
 
-	public $code_modifiable;				// Code modifiable
+	public $code_modifiable; // Code modifiable
 
-	public $code_modifiable_invalide;		// Code modifiable si il est invalide
+	public $code_modifiable_invalide; // Code modifiable si il est invalide
 
-	public $code_modifiable_null;			// Code modifiables si il est null
+	public $code_modifiable_null; // Code modifiables si il est null
 
-	public $code_null;						// Code facultatif
+	public $code_null; // Code facultatif
 
 	/**
-     * Dolibarr version of the loaded document
-     * @var string
-     */
-	public $version = 'dolibarr';    		// 'development', 'experimental', 'dolibarr'
+	 * Dolibarr version of the loaded document
+	 * @var string
+	 */
+	public $version = 'dolibarr'; // 'development', 'experimental', 'dolibarr'
 
-	public $code_auto; 	                // Numerotation automatique
+	/**
+	 * @var int Automatic numbering
+	 */
+	public $code_auto;
 
 
 	/**
@@ -82,7 +84,7 @@ class mod_codeproduct_leopard extends ModeleProductCode
 
 
 	/**
-     *  Return description of module
+	 *  Return description of module
 	 *
 	 *  @param	Translate	$langs	Object langs
 	 *  @return string      		Description of module
@@ -97,7 +99,7 @@ class mod_codeproduct_leopard extends ModeleProductCode
 	/**
 	 * Return an example of result returned by getNextValue
 	 *
-	 * @param	product		$objproduct		Object product
+	 * @param	Product		$objproduct		Object product
 	 * @param	int			$type		Type of third party (1:customer, 2:supplier, -1:autodetect)
 	 * @return	string					Return next value
 	 */
@@ -111,30 +113,27 @@ class mod_codeproduct_leopard extends ModeleProductCode
 	/**
 	 *  Check validity of code according to its rules
 	 *
-	 *  @param	DoliDB		$db		Database handler
-	 *  @param	string		$code	Code to check/correct
+	 *  @param	DoliDB		$db			Database handler
+	 *  @param	string		$code		Code to check/correct
 	 *  @param	Product		$product	Object product
-	 *  @param  int		  	$type   0 = product , 1 = service
-	 *  @return int                 0 if OK
-	 *                              -1 ErrorBadProductCodeSyntax
-	 *                              -2 ErrorProductCodeRequired
-	 *                              -3 ErrorProductCodeAlreadyUsed
-	 *                              -4 ErrorPrefixRequired
+	 *  @param  int		  	$type   	0 = product , 1 = service
+	 *  @return int                 	0 if OK
+	 *                              	-1 ErrorBadProductCodeSyntax
+	 *                              	-2 ErrorProductCodeRequired
+	 *                              	-3 ErrorProductCodeAlreadyUsed
+	 *                              	-4 ErrorPrefixRequired
 	 */
 	public function verif($db, &$code, $product, $type)
 	{
 		global $conf;
 
-		$result=0;
+		$result = 0;
 		$code = strtoupper(trim($code));
 
-		if (empty($code) && $this->code_null && empty($conf->global->MAIN_COMPANY_CODE_ALWAYS_REQUIRED))
-		{
-			$result=0;
-		}
-		elseif (empty($code) && (! $this->code_null || ! empty($conf->global->MAIN_COMPANY_CODE_ALWAYS_REQUIRED)))
-		{
-			$result=-2;
+		if (empty($code) && $this->code_null && empty($conf->global->MAIN_COMPANY_CODE_ALWAYS_REQUIRED)) {
+			$result = 0;
+		} elseif (empty($code) && (!$this->code_null || !empty($conf->global->MAIN_COMPANY_CODE_ALWAYS_REQUIRED))) {
+			$result = -2;
 		}
 
 		dol_syslog("mod_codeproduct_leopard::verif type=".$type." result=".$result);

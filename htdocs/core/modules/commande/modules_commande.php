@@ -18,8 +18,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -30,7 +30,7 @@
  */
 
 require_once DOL_DOCUMENT_ROOT.'/core/class/commondocgenerator.class.php';
-require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php';	// required for use by classes that inherit
+require_once DOL_DOCUMENT_ROOT.'/compta/bank/class/account.class.php'; // required for use by classes that inherit
 require_once DOL_DOCUMENT_ROOT.'/core/class/discount.class.php';
 
 
@@ -39,20 +39,35 @@ require_once DOL_DOCUMENT_ROOT.'/core/class/discount.class.php';
  */
 abstract class ModelePDFCommandes extends CommonDocGenerator
 {
+	public $posxpicture;
+	public $posxtva;
+	public $posxup;
+	public $posxqty;
+	public $posxunit;
+	public $posxdesc;
+	public $posxdiscount;
+	public $postotalht;
 
-    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
-    /**
-     *  Return list of active generation modules
-     *
-     *  @param	DoliDB	$db     			Database handler
-     *  @param  integer	$maxfilenamelength  Max length of value to show
-     *  @return	array						List of templates
+	public $tva;
+	public $tva_array;
+	public $localtax1;
+	public $localtax2;
+
+	public $atleastoneratenotnull = 0;
+	public $atleastonediscount = 0;
+
+
+	// phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
+	/**
+	 *  Return list of active generation modules
+	 *
+	 *  @param	DoliDB	$db     			Database handler
+	 *  @param  integer	$maxfilenamelength  Max length of value to show
+	 *  @return	array						List of templates
 	 */
 	public static function liste_modeles($db, $maxfilenamelength = 0)
 	{
-        // phpcs:enable
-		global $conf;
-
+		// phpcs:enable
 		$type = 'order';
 		$list = array();
 
@@ -73,7 +88,7 @@ abstract class ModeleNumRefCommandes
 	/**
 	 * @var string Error code (or message)
 	 */
-	public $error='';
+	public $error = '';
 
 	/**
 	 *	Return if a module can be used or not
@@ -86,9 +101,9 @@ abstract class ModeleNumRefCommandes
 	}
 
 	/**
-	 *	Renvoie la description par defaut du modele de numerotation
+	 *	Returns the default description of the numbering pattern
 	 *
-	 *	@return     string      Texte descripif
+	 *	@return     string      Descriptive text
 	 */
 	public function info()
 	{
@@ -110,9 +125,10 @@ abstract class ModeleNumRefCommandes
 	}
 
 	/**
-	 *	Test si les numeros deja en vigueur dans la base ne provoquent pas de conflits qui empecheraient cette numerotation de fonctionner.
+	 *  Checks if the numbers already in the database do not
+	 *  cause conflicts that would prevent this numbering working.
 	 *
-	 *	@return     boolean     false si conflit, true si ok
+	 *	@return     boolean     false if conflict, true if ok
 	 */
 	public function canBeActivated()
 	{
@@ -120,7 +136,7 @@ abstract class ModeleNumRefCommandes
 	}
 
 	/**
-	 *	Renvoie prochaine valeur attribuee
+	 *	Returns next assigned value
 	 *
 	 *	@param	Societe		$objsoc     Object thirdparty
 	 *	@param	Object		$object		Object we need next value for
@@ -133,7 +149,7 @@ abstract class ModeleNumRefCommandes
 	}
 
 	/**
-	 *	Renvoie version du module numerotation
+	 *	Returns version of numbering module
 	 *
 	 *	@return     string      Valeur
 	 */
@@ -142,10 +158,18 @@ abstract class ModeleNumRefCommandes
 		global $langs;
 		$langs->load("admin");
 
-		if ($this->version == 'development') return $langs->trans("VersionDevelopment");
-		if ($this->version == 'experimental') return $langs->trans("VersionExperimental");
-		if ($this->version == 'dolibarr') return DOL_VERSION;
-		if ($this->version) return $this->version;
+		if ($this->version == 'development') {
+			return $langs->trans("VersionDevelopment");
+		}
+		if ($this->version == 'experimental') {
+			return $langs->trans("VersionExperimental");
+		}
+		if ($this->version == 'dolibarr') {
+			return DOL_VERSION;
+		}
+		if ($this->version) {
+			return $this->version;
+		}
 		return $langs->trans("NotAvailable");
 	}
 }

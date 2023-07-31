@@ -17,7 +17,7 @@
 -- GNU General Public License for more details.
 --
 -- You should have received a copy of the GNU General Public License
--- along with this program. If not, see <http://www.gnu.org/licenses/>.
+-- along with this program. If not, see <https://www.gnu.org/licenses/>.
 --
 -- ===================================================================
 
@@ -41,7 +41,6 @@ create table llx_fichinterdet_rec
 	localtax2_type		VARCHAR(1) NULL DEFAULT NULL,
 	qty					double NULL DEFAULT NULL,
 	remise_percent		double NULL DEFAULT 0,
-	remise				double NULL DEFAULT 0,
 	fk_remise_except	integer NULL DEFAULT NULL,
 	price				DOUBLE(24, 8) NULL DEFAULT NULL,
 	total_tva			DOUBLE(24, 8) NULL DEFAULT NULL,
@@ -55,7 +54,6 @@ create table llx_fichinterdet_rec
 	buy_price_ht		DOUBLE(24, 8) NULL DEFAULT 0,
 	fk_product_fournisseur_price	integer NULL DEFAULT NULL,
 	fk_code_ventilation	integer NOT NULL DEFAULT 0,
-	fk_export_commpta	integer NOT NULL DEFAULT 0,
 	special_code		integer UNSIGNED NULL DEFAULT 0,
 	fk_unit				integer NULL DEFAULT NULL,	
 	import_key			varchar(14) NULL DEFAULT NULL

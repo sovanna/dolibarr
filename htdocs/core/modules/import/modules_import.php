@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
@@ -30,68 +30,110 @@ require_once DOL_DOCUMENT_ROOT.'/core/lib/functions.lib.php';
  */
 class ModeleImports
 {
-    /**
-     * @var DoliDB Database handler.
-     */
-    public $db;
+	/**
+	 * @var DoliDB Database handler.
+	 */
+	public $db;
 
-    public $datatoimport;
+	public $datatoimport;
 
-    /**
+	/**
 	 * @var string Error code (or message)
 	 */
-	public $error='';
+	public $error = '';
 
-    /**
-	 * @var int id of driver
+	/**
+	 * @var string Code of driver
 	 */
 	public $id;
 
-    /**
-     * @var string label
-     */
-    public $label;
+	/**
+	 * @var string label
+	 */
+	public $label;
 
-	public $extension;    // Extension of files imported by driver
+	public $extension; // Extension of files imported by driver
 
 	/**
-     * Dolibarr version of driver
-     * @var string
-     */
+	 * Dolibarr version of driver
+	 * @var string
+	 */
 	public $version = 'dolibarr';
 
-	public $label_lib;    // Label of external lib used by driver
+	public $label_lib; // Label of external lib used by driver
 
-	public $version_lib;  // Version of external lib used by driver
+	public $version_lib; // Version of external lib used by driver
 
 	// Array of all drivers
-	public $driverlabel=array();
+	public $driverlabel = array();
 
-	public $driverdesc=array();
+	public $driverdesc = array();
 
-	public $driverversion=array();
+	public $driverversion = array();
 
-	public $liblabel=array();
+	public $liblabel = array();
 
-	public $libversion=array();
+	public $libversion = array();
+
+	public $charset;
 
 
 	/**
-     *  Constructor
+	 * @var	array	Element mapping from table name
 	 */
-    public function __construct()
-	{
-	}
+	public static $mapTableToElement = array(
+		'actioncomm' => 'agenda',
+		'adherent' => 'member',
+		'adherent_type' => 'member_type',
+		//'bank_account' => 'bank_account',
+		'categorie' => 'category',
+		//'commande' => 'commande',
+		//'commande_fournisseur' => 'commande_fournisseur',
+		'contrat' => 'contract',
+		'entrepot' => 'stock',
+		//'expensereport' => 'expensereport',
+		'facture' => 'invoice',
+		//'facture_fourn' => 'facture_fourn',
+		'fichinter' => 'intervention',
+		//'holiday' => 'holiday',
+		//'product' => 'product',
+		'product_price' => 'productprice',
+		'product_fournisseur_price' => 'productsupplierprice',
+		'projet'  => 'project',
+		//'propal' => 'propal',
+		//'societe' => 'societe',
+		'socpeople' => 'contact',
+		//'supplier_proposal' => 'supplier_proposal',
+		//'ticket' => 'ticket',
+	);
 
+	/**
+	 *  Constructor
+	 */
+	public function __construct()
+	{
+		global $hookmanager;
+
+		if (is_object($hookmanager)) {
+			$hookmanager->initHooks(array('import'));
+			$parameters = array();
+			$reshook = $hookmanager->executeHooks('constructModeleImports', $parameters, $this);
+			if ($reshook >= 0 && !empty($hookmanager->resArray)) {
+				foreach ($hookmanager->resArray as $mapList) {
+					self::$mapTableToElement[$mapList['table']] = $mapList['element'];
+				}
+			}
+		}
+	}
 
 	/**
 	 * getDriverId
 	 *
-	 * @return string		Id
+	 * @return int		Id
 	 */
-    public function getDriverId()
+	public function getDriverId()
 	{
-	    return $this->id;
+		return $this->id;
 	}
 
 	/**
@@ -99,9 +141,9 @@ class ModeleImports
 	 *
 	 *	@return string	Label
 	 */
-    public function getDriverLabel()
+	public function getDriverLabel()
 	{
-	    return $this->label;
+		return $this->label;
 	}
 
 	/**
@@ -109,9 +151,9 @@ class ModeleImports
 	 *
 	 *	@return string	Description
 	 */
-    public function getDriverDesc()
+	public function getDriverDesc()
 	{
-	    return $this->desc;
+		return $this->desc;
 	}
 
 	/**
@@ -119,9 +161,9 @@ class ModeleImports
 	 *
 	 * @return string	Driver suffix
 	 */
-    public function getDriverExtension()
+	public function getDriverExtension()
 	{
-	    return $this->extension;
+		return $this->extension;
 	}
 
 	/**
@@ -129,9 +171,9 @@ class ModeleImports
 	 *
 	 *	@return string	Driver version
 	 */
-    public function getDriverVersion()
+	public function getDriverVersion()
 	{
-	    return $this->version;
+		return $this->version;
 	}
 
 	/**
@@ -139,9 +181,9 @@ class ModeleImports
 	 *
 	 *	@return string	Label of external lib
 	 */
-    public function getLibLabel()
+	public function getLibLabel()
 	{
-	    return $this->label_lib;
+		return $this->label_lib;
 	}
 
 	/**
@@ -149,59 +191,54 @@ class ModeleImports
 	 *
 	 *	@return string	Version of external lib
 	 */
-    public function getLibVersion()
+	public function getLibVersion()
 	{
-	    return $this->version_lib;
+		return $this->version_lib;
 	}
 
 
-    // phpcs:disable PEAR.NamingConventions.ValidFunctionName.ScopeNotCamelCaps
-    /**
-     *  Charge en memoire et renvoie la liste des modeles actifs
-     *
-     *  @param	DoliDB	$db     			Database handler
-     *  @param  integer	$maxfilenamelength  Max length of value to show
-     *  @return	array						List of templates
+	/**
+	 *  Load into memory list of available import format
+	 *
+	 *  @param	DoliDB	$db     			Database handler
+	 *  @param  integer	$maxfilenamelength  Max length of value to show
+	 *  @return	array						List of templates
 	 */
-    public function liste_modeles($db, $maxfilenamelength = 0)
+	public function listOfAvailableImportFormat($db, $maxfilenamelength = 0)
 	{
-        // phpcs:enable
-		dol_syslog(get_class($this)."::liste_modeles");
+		dol_syslog(get_class($this)."::listOfAvailableImportFormat");
 
-		$dir=DOL_DOCUMENT_ROOT."/core/modules/import/";
-		$handle=opendir($dir);
+		$dir = DOL_DOCUMENT_ROOT."/core/modules/import/";
+		$handle = opendir($dir);
 
 		// Recherche des fichiers drivers imports disponibles
-		$i=0;
-        if (is_resource($handle))
-        {
-    		while (($file = readdir($handle))!==false)
-    		{
-    			if (preg_match("/^import_(.*)\.modules\.php/i", $file, $reg))
-    			{
-    				$moduleid=$reg[1];
+		$i = 0;
+		if (is_resource($handle)) {
+			while (($file = readdir($handle)) !== false) {
+				if (preg_match("/^import_(.*)\.modules\.php/i", $file, $reg)) {
+					$moduleid = $reg[1];
 
-    				// Loading Class
-    				$file = $dir."/import_".$moduleid.".modules.php";
-    				$classname = "Import".ucfirst($moduleid);
+					// Loading Class
+					$file = $dir."/import_".$moduleid.".modules.php";
+					$classname = "Import".ucfirst($moduleid);
 
-    				require_once $file;
-    				$module = new $classname($db, '');
+					require_once $file;
+					$module = new $classname($db, '');
 
-    				// Picto
-    				$this->picto[$module->id]=$module->picto;
-    				// Driver properties
-    				$this->driverlabel[$module->id]=$module->getDriverLabel('');
-    				$this->driverdesc[$module->id]=$module->getDriverDesc('');
-    				$this->driverversion[$module->id]=$module->getDriverVersion('');
-    				// If use an external lib
-    				$this->liblabel[$module->id]=$module->getLibLabel('');
-    				$this->libversion[$module->id]=$module->getLibVersion('');
+					// Picto
+					$this->picto[$module->id] = $module->picto;
+					// Driver properties
+					$this->driverlabel[$module->id] = $module->getDriverLabel('');
+					$this->driverdesc[$module->id] = $module->getDriverDesc('');
+					$this->driverversion[$module->id] = $module->getDriverVersion('');
+					// If use an external lib
+					$this->liblabel[$module->id] = $module->getLibLabel('');
+					$this->libversion[$module->id] = $module->getLibVersion('');
 
-    				$i++;
-    			}
-    		}
-        }
+					$i++;
+				}
+			}
+		}
 
 		return array_keys($this->driverlabel);
 	}
@@ -213,29 +250,29 @@ class ModeleImports
 	 *	@param	string	$key	Key
 	 *	@return	string
 	 */
-    public function getPictoForKey($key)
+	public function getPictoForKey($key)
 	{
 		return $this->picto[$key];
 	}
 
 	/**
-	 *  Renvoi libelle d'un driver import
+	 *  Return label of driver import
 	 *
 	 *	@param	string	$key	Key
 	 *	@return	string
 	 */
-    public function getDriverLabelForKey($key)
+	public function getDriverLabelForKey($key)
 	{
 		return $this->driverlabel[$key];
 	}
 
 	/**
-	 *  Renvoi la description d'un driver import
+	 *  Return description of import drivervoi la description d'un driver import
 	 *
 	 *	@param	string	$key	Key
 	 *	@return	string
 	 */
-    public function getDriverDescForKey($key)
+	public function getDriverDescForKey($key)
 	{
 		return $this->driverdesc[$key];
 	}
@@ -246,7 +283,7 @@ class ModeleImports
 	 *	@param	string	$key	Key
 	 *	@return	string
 	 */
-    public function getDriverVersionForKey($key)
+	public function getDriverVersionForKey($key)
 	{
 		return $this->driverversion[$key];
 	}
@@ -257,7 +294,7 @@ class ModeleImports
 	 *	@param	string	$key	Key
 	 *	@return	string
 	 */
-    public function getLibLabelForKey($key)
+	public function getLibLabelForKey($key)
 	{
 		return $this->liblabel[$key];
 	}
@@ -268,8 +305,26 @@ class ModeleImports
 	 *	@param	string	$key	Key
 	 *	@return	string
 	 */
-    public function getLibVersionForKey($key)
+	public function getLibVersionForKey($key)
 	{
 		return $this->libversion[$key];
+	}
+
+	/**
+	 * Get element from table name with prefix
+	 *
+	 * @param 	string	$tableNameWithPrefix		Table name with prefix
+	 * @return 	string	Element name or table element as default
+	 */
+	public function getElementFromTableWithPrefix($tableNameWithPrefix)
+	{
+		$tableElement = preg_replace('/^'.preg_quote($this->db->prefix(), '/').'/', '', $tableNameWithPrefix);
+		$element = $tableElement;
+
+		if (isset(self::$mapTableToElement[$tableElement])) {
+			$element = self::$mapTableToElement[$tableElement];
+		}
+
+		return $element;
 	}
 }

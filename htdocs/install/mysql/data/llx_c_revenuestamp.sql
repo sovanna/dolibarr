@@ -11,7 +11,7 @@
 -- GNU General Public License for more details.
 --
 -- You should have received a copy of the GNU General Public License
--- along with this program. If not, see <http://www.gnu.org/licenses/>.
+-- along with this program. If not, see <https://www.gnu.org/licenses/>.
 --
 
 --
@@ -33,4 +33,8 @@ insert into llx_c_revenuestamp(rowid,fk_pays,taux,revenuestamp_type,note,active)
 -- MEXICO (id country=154) --
 insert into llx_c_revenuestamp(rowid,fk_pays,taux,revenuestamp_type,note,active) values (1541, 154, 1.5, 'percent', 'Revenue stamp mexico', 1);
 insert into llx_c_revenuestamp(rowid,fk_pays,taux,revenuestamp_type,note,active) values (1542, 154,   3, 'percent', 'Revenue stamp mexico', 1);
+
+-- Turkiye (Turkey) (id country=221) --
+insert into llx_c_revenuestamp(rowid,fk_pays,taux,revenuestamp_type,note,active) values (22101,221,0.00948,'percent','Mukavelenameler Damga Vergisi',1);
+insert into llx_c_revenuestamp(rowid,fk_pays,taux,revenuestamp_type,note,active) values (22102,221,0.00189,'percent','Kira mukavelenameleri Damga Vergisi',1);
 

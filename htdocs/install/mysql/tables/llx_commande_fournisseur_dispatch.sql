@@ -12,11 +12,15 @@
 -- GNU General Public License for more details.
 --
 -- You should have received a copy of the GNU General Public License
--- along with this program. If not, see <http://www.gnu.org/licenses/>.
+-- along with this program. If not, see <https://www.gnu.org/licenses/>.
 --
 -- This table is just an history table to track all receiving done for a 
 -- particular supplier order. A movement with same information is also done
 -- into stock_movement so this table may be useless.
+-- 
+-- Detail of each lines of a reception (qty, batch and into which warehouse must be
+-- received or has been receveived a purchase order line).
+-- This table should have been named llx_receptiondet_batch
 -- ===================================================================
 
 create table llx_commande_fournisseur_dispatch
@@ -31,10 +35,11 @@ create table llx_commande_fournisseur_dispatch
   fk_entrepot    integer,
   fk_user        integer,
   comment		 varchar(255),		  -- comment on movement
-  batch          varchar(30) DEFAULT NULL,
+  batch          varchar(128) DEFAULT NULL,
   eatby          date DEFAULT NULL,
   sellby         date DEFAULT NULL,
   status         integer,
   datec          datetime,
-  tms            timestamp
+  tms            timestamp DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  cost_price     double(24,8) DEFAULT 0
 )ENGINE=innodb;

@@ -12,131 +12,134 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- * or see http://www.gnu.org/
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * or see https://www.gnu.org/
  */
 
 /**
  *    \file       htdocs/core/modules/ticket/mod_ticket_universal.php
  *    \ingroup    ticket
- *    \brief      Fichier contenant la classe du modele de numerotation de reference de projet Universal
+ *    \brief      File with class to manage the numbering module Universal for Ticket references
  */
 
 require_once DOL_DOCUMENT_ROOT.'/core/modules/ticket/modules_ticket.php';
 
 /**
- *     Classe du modele de numerotation de reference de projet Universal
+ *  Class to manage the numbering module Universal for Ticket references
  */
 class mod_ticket_universal extends ModeleNumRefTicket
 {
-    /**
-     * Dolibarr version of the loaded document
-     * @var string
-     */
-    public $version = 'dolibarr'; // 'development', 'experimental', 'dolibarr'
-
-    /**
-     * @var string Error code (or message)
-     */
-    public $error = '';
-
-    /**
-	 * @var string Nom du modele
-	 * @deprecated
-	 * @see name
+	/**
+	 *  Dolibarr version of the loaded document
+	 *  @var string
 	 */
-	public $nom='Universal';
+	public $version = 'dolibarr';  // 'development', 'experimental', 'dolibarr'
 
 	/**
-	 * @var string model name
+	 *  @var string Error code (or message)
 	 */
-	public $name='Universal';
+	public $error = '';
 
-    /**
-     *  Returns the description of the numbering model
-     *
-     *  @return string      Texte descripif
-     */
-    public function info()
-    {
-        global $db, $conf, $langs;
+	/**
+	 *  @var string Nom du modele
+	 *  @deprecated
+	 *  @see $name
+	 */
+	public $nom = 'Universal';
 
-        // Load translation files required by the page
-        $langs->loadLangs(array("ticket","admin"));
+	/**
+	 *  @var string model name
+	 */
+	public $name = 'Universal';
 
-        $form = new Form($db);
+	/**
+	 *  Returns the description of the numbering model
+	 *
+	 *  @return string      Descriptive text
+	 */
+	public function info()
+	{
+		global $db, $conf, $langs;
 
-        $texte = $langs->trans('GenericNumRefModelDesc') . "<br>\n";
-        $texte .= '<form action="' . $_SERVER["PHP_SELF"] . '" method="POST">';
-        $texte .= '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
-        $texte .= '<input type="hidden" name="action" value="updateMask">';
-        $texte .= '<input type="hidden" name="maskconstticket" value="TICKET_UNIVERSAL_MASK">';
-        $texte .= '<table class="nobordernopadding" width="100%">';
+		// Load translation files required by the page
+		$langs->loadLangs(array("ticket", "admin"));
 
-        $tooltip = $langs->trans("GenericMaskCodes", $langs->transnoentities("Ticket"), $langs->transnoentities("Ticket"));
-        $tooltip .= $langs->trans("GenericMaskCodes2");
-        $tooltip .= $langs->trans("GenericMaskCodes3");
-        $tooltip .= $langs->trans("GenericMaskCodes4a", $langs->transnoentities("Ticket"), $langs->transnoentities("Ticket"));
-        $tooltip .= $langs->trans("GenericMaskCodes5");
+		$form = new Form($db);
 
-        // Parametrage du prefix
-        $texte .= '<tr><td>' . $langs->trans("Mask") . ':</td>';
-        $texte .= '<td class="right">' . $form->textwithpicto('<input type="text" class="flat" size="24" name="maskticket" value="' . $conf->global->TICKET_UNIVERSAL_MASK . '">', $tooltip, 1, 1) . '</td>';
+		$texte = $langs->trans('GenericNumRefModelDesc')."<br>\n";
+		$texte .= '<form action="'.$_SERVER["PHP_SELF"].'" method="POST">';
+		$texte .= '<input type="hidden" name="token" value="'.newToken().'">';
+		$texte .= '<input type="hidden" name="action" value="updateMask">';
+		$texte .= '<input type="hidden" name="maskconstticket" value="TICKET_UNIVERSAL_MASK">';
+		$texte .= '<table class="nobordernopadding" width="100%">';
 
-        $texte .= '<td class="left" rowspan="2">&nbsp; <input type="submit" class="button" value="' . $langs->trans("Modify") . '" name="Button"></td>';
+		$tooltip = $langs->trans("GenericMaskCodes", $langs->transnoentities("Ticket"), $langs->transnoentities("Ticket"));
+		$tooltip .= $langs->trans("GenericMaskCodes2");
+		$tooltip .= $langs->trans("GenericMaskCodes3");
+		$tooltip .= $langs->trans("GenericMaskCodes4a", $langs->transnoentities("Ticket"), $langs->transnoentities("Ticket"));
+		$tooltip .= $langs->trans("GenericMaskCodes5");
 
-        $texte .= '</tr>';
+		// Prefix settings
+		$texte .= '<tr><td>'.$langs->trans("Mask").':</td>';
+		$texte .= '<td class="right">'.$form->textwithpicto('<input type="text" class="flat minwidth175" name="maskticket" value="'.getDolGlobalString("TICKET_UNIVERSAL_MASK").'">', $tooltip, 1, 1).'</td>';
 
-        $texte .= '</table>';
-        $texte .= '</form>';
+		$texte .= '<td class="left" rowspan="2">&nbsp; <input type="submit" class="button button-edit" name="Button"value="'.$langs->trans("Modify").'"></td>';
 
-        return $texte;
-    }
+		$texte .= '</tr>';
 
-    /**
-     *  Renvoi un exemple de numerotation
-     *
-     *  @return string      Example
-     */
-    public function getExample()
-    {
-        global $conf, $langs, $mysoc;
+		$texte .= '</table>';
+		$texte .= '</form>';
 
-        $old_code_client = $mysoc->code_client;
-        $mysoc->code_client = 'CCCCCCCCCC';
-        $numExample = $this->getNextValue($mysoc, '');
-        $mysoc->code_client = $old_code_client;
+		return $texte;
+	}
 
-        if (!$numExample) {
-            $numExample = $langs->trans('NotConfigured');
-        }
-        return $numExample;
-    }
+	/**
+	 *  Return an example of numbering
+	 *
+	 *  @return string      Example
+	 */
+	public function getExample()
+	{
+		global $conf, $langs, $mysoc;
 
-    /**
-     *  Return next value
-     *
-     *  @param  Societe $objsoc    Object third party
-     *  @param  Project $ticket Object ticket
-     *  @return string                    Value if OK, 0 if KO
-     */
-    public function getNextValue($objsoc, $ticket)
-    {
-        global $db, $conf;
+		$old_code_client = $mysoc->code_client;
+		$mysoc->code_client = 'CCCCCCCCCC';
+		$numExample = $this->getNextValue($mysoc, '');
+		$mysoc->code_client = $old_code_client;
 
-        include_once DOL_DOCUMENT_ROOT . '/core/lib/functions2.lib.php';
+		if (!$numExample) {
+			$numExample = $langs->trans('NotConfigured');
+		}
+		return $numExample;
+	}
 
-        // On defini critere recherche compteur
-        $mask = $conf->global->TICKET_UNIVERSAL_MASK;
+	/**
+	 *  Return next value
+	 *
+	 *  @param  Societe $objsoc     Object third party
+	 *  @param  Ticket  $ticket 	Object ticket
+	 *  @return string              Value if OK, 0 if KO
+	 */
+	public function getNextValue($objsoc, $ticket)
+	{
+		global $db, $conf;
 
-        if (!$mask) {
-            $this->error = 'NotConfigured';
-            return 0;
-        }
+		include_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
-        $date = empty($ticket->date_c) ? dol_now() : $ticket->datec;
-        $numFinal = get_next_value($db, $mask, 'ticket', 'ref', '', $objsoc->code_client, $date);
+		// We define criterion search counter
+		$mask = getDolGlobalString("TICKET_UNIVERSAL_MASK");
 
-        return $numFinal;
-    }
+		if (!$mask) {
+			$this->error = 'NotConfigured';
+			return 0;
+		}
+
+		// Get entities
+		$entity = getEntity('ticketnumber', 1, $ticket);
+
+		$date = empty($ticket->datec) ? dol_now() : $ticket->datec;
+		$numFinal = get_next_value($db, $mask, 'ticket', 'ref', '', $objsoc->code_client, $date, 'next', false, null, $entity);
+
+		return $numFinal;
+	}
 }

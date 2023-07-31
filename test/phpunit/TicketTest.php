@@ -1,5 +1,6 @@
 <?php
 /* Copyright (C) 2010 Laurent Destailleur  <eldy@users.sourceforge.net>
+ * Copyright (C) 2023 Alexandre Janniaux   <alexandre.janniaux@gmail.com>
  *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -12,8 +13,8 @@
 * GNU General Public License for more details.
 *
 * You should have received a copy of the GNU General Public License
-* along with this program. If not, see <http://www.gnu.org/licenses/>.
-* or see http://www.gnu.org/
+* along with this program. If not, see <https://www.gnu.org/licenses/>.
+* or see https://www.gnu.org/
 */
 
 /**
@@ -56,11 +57,12 @@ class TicketTest extends PHPUnit\Framework\TestCase
 	 * Constructor
 	 * We save global variables into local variables
 	 *
-	 * @return ContratTest
+	 * @param 	string	$name		Name
+	 * @return TicketTest
 	 */
-	public function __construct()
+	public function __construct($name = '')
 	{
-		parent::__construct();
+		parent::__construct($name);
 
 		//$this->sharedFixture
 		global $conf,$user,$langs,$db;
@@ -74,8 +76,12 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		print "\n";
 	}
 
-	// Static methods
-	public static function setUpBeforeClass()
+	/**
+	 * setUpBeforeClass
+	 *
+	 * @return void
+	 */
+	public static function setUpBeforeClass(): void
 	{
 		global $conf,$user,$langs,$db;
 		$db->begin();	// This is to have all actions inside a transaction even if test launched without suite.
@@ -83,8 +89,12 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		print __METHOD__."\n";
 	}
 
-	// tear down after class
-	public static function tearDownAfterClass()
+	/**
+	 * tearDownAfterClass
+	 *
+	 * @return	void
+	 */
+	public static function tearDownAfterClass(): void
 	{
 		global $conf,$user,$langs,$db;
 		$db->rollback();
@@ -97,7 +107,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 	 *
 	 * @return	void
 	 */
-	protected function setUp()
+	protected function setUp(): void
 	{
 		global $conf,$user,$langs,$db;
 		$conf=$this->savconf;
@@ -112,7 +122,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 	 *
 	 * @return	void
 	 */
-	protected function tearDown()
+	protected function tearDown(): void
 	{
 		print __METHOD__."\n";
 	}
@@ -131,7 +141,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		$db=$this->savdb;
 
 		// Try to create one with bad values
-		$localobject=new Ticket($this->savdb);
+		$localobject=new Ticket($db);
 		$localobject->initAsSpecimen();
 		$localobject->ref = '';
 		$result=$localobject->create($user);
@@ -140,7 +150,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		$this->assertEquals(-3, $result, $localobject->error.join(',', $localobject->errors));
 
 		// Try to create one with correct values
-		$localobject=new Ticket($this->savdb);
+		$localobject=new Ticket($db);
 		$localobject->initAsSpecimen();
 		$result=$localobject->create($user);
 
@@ -167,7 +177,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		$langs=$this->savlangs;
 		$db=$this->savdb;
 
-		$localobject=new Ticket($this->savdb);
+		$localobject=new Ticket($db);
 		$result=$localobject->fetch($id);
 
 		print __METHOD__." id=".$id." result=".$result."\n";
@@ -298,7 +308,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		$user_id_to_assign = 1;
 
 		$result=$localobject->assignUser($user, $user_id_to_assign);
-        ;
+		;
 		print __METHOD__." id=".$localobject->id." result=".$result."\n";
 
 		$this->assertGreaterThan(0, $result);
@@ -374,7 +384,7 @@ class TicketTest extends PHPUnit\Framework\TestCase
 		$langs=$this->savlangs;
 		$db=$this->savdb;
 
-		$localobject=new Ticket($this->savdb);
+		$localobject=new Ticket($db);
 		$result=$localobject->fetch($id);
 		$result=$localobject->delete($user);
 

@@ -9,25 +9,27 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 /**
- *      \file       htdocs/admin/system/os.php
- *		\brief      Page des infos systeme de l'OS
+ *    \file      htdocs/admin/system/os.php
+ *    \brief     Page about System OS (Operating System)
  */
 
+// Load Dolibarr environment
 require '../../main.inc.php';
 require_once DOL_DOCUMENT_ROOT.'/core/lib/functions2.lib.php';
 
 $langs->load("admin");
 
-if (!$user->admin)
-  accessforbidden();
+if (!$user->admin) {
+	accessforbidden();
+}
 
 /*
  * View
@@ -37,16 +39,16 @@ llxHeader();
 
 print load_fiche_titre($langs->trans("InfoOS"), '', 'title_setup');
 
-print '<table class="noborder" width="100%">';
+print '<table class="noborder centpercent">';
 print '<tr class="liste_titre"><td>'.$langs->trans("Parameter").'</td><td>'.$langs->trans("Value").'</td></tr>';
 print "\n";
 
-// Recupere l'OS au sens PHP
-print "<tr $bc[0]><td width=\"240\">".$langs->trans("PHP_OS")."</td><td>".PHP_OS."</td></tr>\n";
+// Recovers the OS in the PHP sense
+print '<tr class="oddeven"><td>'.$langs->trans("PHP_OS")."</td><td>".PHP_OS."</td></tr>\n";
 
-// Recupere la version de l'OS
-$osversion=version_os();
-print "<tr $bc[1]><td width=\"240\">".$langs->trans("Version")."</td><td>".$osversion."</td></tr>\n";
+// Recovers the OS version
+$osversion = version_os();
+print '<tr class="oddeven"><td>'.$langs->trans("Version")."</td><td>".$osversion."</td></tr>\n";
 print '</table>';
 
 // End of page

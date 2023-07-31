@@ -17,7 +17,7 @@
 -- GNU General Public License for more details.
 --
 -- You should have received a copy of the GNU General Public License
--- along with this program. If not, see <http://www.gnu.org/licenses/>.
+-- along with this program. If not, see <https://www.gnu.org/licenses/>.
 --
 --
 
@@ -36,5 +36,5 @@ insert into llx_c_effectif (id,code,libelle) values (1, 'EF1-5',     '1 - 5');
 insert into llx_c_effectif (id,code,libelle) values (2, 'EF6-10',    '6 - 10');
 insert into llx_c_effectif (id,code,libelle) values (3, 'EF11-50',   '11 - 50');
 insert into llx_c_effectif (id,code,libelle) values (4, 'EF51-100',  '51 - 100');
-insert into llx_c_effectif (id,code,libelle) values (5, 'EF100-500', '100 - 500');
+insert into llx_c_effectif (id,code,libelle) values (5, 'EF101-500', '101 - 500');
 insert into llx_c_effectif (id,code,libelle) values (6, 'EF500-',    '> 500');
